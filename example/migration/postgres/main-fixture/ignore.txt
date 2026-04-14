@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS "%SYSTEM_TABLE%"
+(
+    "name"  varchar(512) NOT NULL PRIMARY KEY,
+    "atime" timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<ruleset name="PSR12">
+    <description>The PSR12 coding standard.</description>
+    <rule ref="PSR12"/>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- Show progression -->
+    <arg name="basepath" value="."/>
+    <arg name="extensions" value="php" />
+    <arg name="colors"/>
+    <arg value="p"/>
+
+    <!-- https://github.com/slevomat/coding-standard -->
+    <config name="installed_paths" value="../../slevomat/coding-standard"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
+        <properties>
+            <property name="linesCountBeforeDeclare" value="1"/>
+            <property name="linesCountAfterDeclare" value="1"/>
+            <property name="spacesCountAroundEqualsSign" value="0"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+        <properties>
+            <property name="searchAnnotations" value="1"/>
+        </properties>
+    </rule>
+    <!-- https://github.com/slevomat/coding-standard/blob/master/doc/arrays.md -->
+    <rule ref="SlevomatCodingStandard.Arrays.TrailingArrayComma">
+        <properties>
+            <property name="enableAfterHeredoc" value="false"/>
+        </properties>
+    </rule>
+    <!-- https://github.com/slevomat/coding-standard/blob/master/doc/classes.md -->
+    <rule ref="SlevomatCodingStandard.Classes.RequireAbstractOrFinal"/>
+    <rule ref="SlevomatCodingStandard.Classes.ClassConstantVisibility"/>
+    <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
+    <rule ref="SlevomatCodingStandard.Classes.UselessLateStaticBinding"/>
+    <!-- https://github.com/slevomat/coding-standard/blob/master/doc/php.md -->
+    <rule ref="SlevomatCodingStandard.PHP.ShortList"/>
+    <rule ref="SlevomatCodingStandard.PHP.TypeCast"/>
+    <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
+    <!-- https://github.com/slevomat/coding-standard/blob/master/doc/whitespaces.md -->
+    <rule ref="SlevomatCodingStandard.Whitespaces.DuplicateSpaces"/>
+</ruleset>

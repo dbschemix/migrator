@@ -1,0 +1,21 @@
+# phpstorm project files
+.idea
+.zed
+
+# Mac DS_Store Files
+.DS_Store
+
+# composer vendor dir
+/vendor
+**/vendor/
+
+# composer
+composer.lock
+
+# phpunit itself is not needed
+phpunit.phar
+.phpunit.result.cache
+
+# local
+*.local.php
+.auth.json

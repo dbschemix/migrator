@@ -1,0 +1,21 @@
+{
+  "source": {
+    "directories": [
+      "src"
+    ]
+  },
+  "threads": "max",
+  "minCoveredMsi": 99,
+  "phpUnit": {
+    "configDir": "."
+  },
+  "mutators": {
+    "@default": true
+  },
+  "logs": {
+    "text": "runtime/logs/infection.log",
+    "stryker": {
+      "report": "/^.*$/"
+    }
+  }
+}
