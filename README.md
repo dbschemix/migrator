@@ -2,6 +2,11 @@
 
 Консольная программа для управления миграциями.
 
+Консольная утилита на основе:
+- https://github.com/dbschemix/core
+- https://github.com/dbschemix/pdo
+- https://github.com/symfony/console
+
 ### Command
 
 - **init** — инициализация проекта: создание папки для миграций и конфигурационного файла.
@@ -206,31 +211,3 @@ INSERT INTO ededede
 202603070850_test2.sql: SQLSTATE[HY000]: General error: 1 incomplete input
 ```
 
-### Static analysis
-
-To run static analysis:
-- [psalm](https://psalm.dev/)
-- [phpstan](https://phpstan.org/)
-
-```shell
-make check
-```
-
-To fix code style:
-- [phpcs](https://github.com/squizlabs/PHP_CodeSniffer)
-- [rector](https://getrector.com/)
-
-```shell
-make fix
-```
-
-### Testing
-
-The package is tested with
-- [PHPUnit](https://phpunit.de/)
-- [Infection](https://github.com/infection/infection)
-
-To run tests:
-```shell
-make tests
-```
