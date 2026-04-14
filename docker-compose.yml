@@ -1,0 +1,120 @@
+x-default-logging: &default-logging
+  driver: local
+  options:
+    max-size: "5m"
+    max-file: "3"
+
+x-volumes:
+  src: &vol-src
+    type: bind
+    source: ./src
+    target: /src
+    
+  example: &vol-example
+    type: bind
+    source: ./example
+    target: /example
+    
+  vendor: &vol-vendor
+    type: bind
+    source: ./vendor
+    target: /vendor
+    read_only: true
+
+name: migrator
+services:
+  app:
+    container_name: migrator_app
+    build:
+      context: .docker/php/cli
+      target: devel
+      args:
+        UID: ${USER:-1} # ID:1 daemon, support: linux, mac
+        WORKDIR: "/example"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - migrator
+    volumes:
+      - *vol-src
+      - *vol-example
+      - *vol-vendor
+    logging: *default-logging
+
+  postgres:
+    container_name: migrator_postgres
+    build:
+      context: .docker/postgresql
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=main
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - migrator
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 2s
+      start_interval: 1s
+    logging: *default-logging
+
+  mysql:
+    container_name: migrator_mysql
+    build:
+      context: .docker/mysql
+    cap_add:
+      - SYS_NICE # CAP_SYS_NICE
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    ports:
+      - "3306:3306"
+    networks:
+      - migrator
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci'
+    ]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: main
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+volumes:
+  pg_data:
+  mysql_data:
+
+networks:
+  migrator:

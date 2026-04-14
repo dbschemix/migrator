@@ -5,7 +5,7 @@ ARGS = $(filter-out $@,$(MAKECMDGOALS))
 DOCKER_RUN = docker run --init -it --rm -u ${USER} -v "$$(pwd):/app" -w /app
 
 # https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-.PHONY: help tests fix check
+.PHONY: help tests fix check example
 .DEFAULT_GOAL := help
 
 help: ## Display this help screen
@@ -61,14 +61,9 @@ rector: ## rector
 		ghcr.io/kuaukutsu/php:${PHP_VERSION}-cli \
 		./vendor/bin/rector
 
-fix: ## run fix tools
-	make phpcbf
-	make rector
+fix: phpcbf rector ## run fix tools
 
-check: ## run analysis tools
-	make phpcs
-	make psalm
-	make phpstan
+check: phpcs psalm phpstan ## run analysis tools
 
 infection:
 	docker build \
@@ -115,7 +110,36 @@ tests:
 
 ## Application
 
-app:
+cli:
 	$(DOCKER_RUN) -w /app/example \
  		ghcr.io/kuaukutsu/php:${PHP_VERSION}-cli \
  		sh -l
+
+example:
+	VERSION=$(VERSION) USER=$(USER) \
+		docker compose run --rm -u $(USER) -w /example app sh -l
+	make stop
+
+stop: ## Stop server
+	docker compose -f ./docker-compose.yml stop
+
+down: stop
+	docker compose -f ./docker-compose.yml down --remove-orphans
+
+remove: down _image_remove _container_remove _volume_remove
+
+_image_remove:
+	docker image rm -f \
+		migrator-app \
+		migrator-postgres \
+		migrator-mysql
+
+_container_remove:
+	docker rm -f \
+		migrator_postgres \
+		migrator_mysql
+
+_volume_remove:
+	docker volume rm -f \
+		migrator_pg_data \
+		migrator_mysql_data
