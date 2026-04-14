@@ -1,0 +1,4 @@
+-- GRANT PRIVILEGES
+CREATE USER IF NOT EXISTS 'dbuser'@'%' IDENTIFIED BY 'dbpassword';
+GRANT ALL ON main.* TO 'dbuser'@'%';
+FLUSH PRIVILEGES;
