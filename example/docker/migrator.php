@@ -7,7 +7,6 @@ namespace dbschemix\migrator\example\docker;
 use dbschemix\pdo\Driver;
 use dbschemix\core\Migration;
 use dbschemix\core\Migrator;
-use dbschemix\core\MigratorInterface;
 use dbschemix\migrator\tools\PrettyConsoleOutput;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
@@ -17,7 +16,7 @@ require dirname(__DIR__, 2) . '/vendor/autoload.php';
  * It is responsible for its own autoload (line above) and for resolving
  * paths via __DIR__ so they work inside the mounted container.
  */
-$migrator = new Migrator(
+return new Migrator(
     list: [
         new Migration(
             path: dirname(__DIR__) . '/migration/sqlite/memory',
@@ -30,6 +29,3 @@ $migrator = new Migrator(
         new PrettyConsoleOutput(),
     ],
 );
-
-/** @var MigratorInterface $migrator phpstan: documents the contract */
-return $migrator;
