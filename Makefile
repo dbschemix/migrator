@@ -65,49 +65,6 @@ fix: phpcbf rector ## run fix tools
 
 check: phpcs psalm phpstan ## run analysis tools
 
-infection:
-	docker build \
-		--build-arg PHP_VERSION=$(PHP_VERSION) \
-		--build-arg USER=$(USER) \
-		--build-arg WORKDIR=/app \
-		--target tests \
-		-t app_cli .docker/php/cli
-	- docker run --init -it --rm \
-		--add-host=host.docker.internal:host-gateway \
-		-u $(USER) \
-		-v "$$(pwd):/app" \
-		-w /app \
-		app_cli ./vendor/bin/infection
-	docker image rm -f app_cli
-
-tests:
-	docker build \
-		--build-arg PHP_VERSION=$(PHP_VERSION) \
-		--build-arg USER=$(USER) \
-		--build-arg WORKDIR=/app \
-		--target tests \
-		-t app_cli .docker/php/cli
-	- docker run --init -it --rm \
-		--add-host=host.docker.internal:host-gateway \
-		-u $(USER) \
-		-v "$$(pwd):/app" \
-		-w /app \
-		app_cli ./vendor/bin/phpunit \
-			--configuration phpunit.xml.dist \
-			--coverage-xml=/app/runtime/coverage/coverage-xml \
-			--coverage-clover=/app/runtime/coverage/clover.xml \
-			--log-junit=/app/runtime/coverage/phpunit.junit.xml
-	- docker run --init -it --rm \
-		--add-host=host.docker.internal:host-gateway \
-		-u $(USER) \
-		-v "$$(pwd):/app" \
-		-w /app \
-		app_cli ./vendor/bin/infection \
-			--coverage=/app/runtime/coverage \
-			--threads=max \
-			--skip-initial-tests
-	docker image rm -f app_cli
-
 ## Application
 
 cli:
@@ -143,3 +100,10 @@ _volume_remove:
 	docker volume rm -f \
 		migrator_pg_data \
 		migrator_mysql_data
+
+## AI
+-include .claude/Makefile
+
+# Спец-правило, чтобы Makefile не ругался на неизвестные команды (аргументы)
+%:
+	@:
