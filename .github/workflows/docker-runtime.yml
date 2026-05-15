@@ -1,0 +1,50 @@
+name: Docker Runtime
+
+on: [ pull_request ]
+
+jobs:
+  runtime:
+    name: runtime image smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo pdo_sqlite
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Composer install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: "highest"
+          composer-options: "--optimize-autoloader"
+
+      - name: Build runtime image
+        run: docker build -t migrator-runtime:ci .docker/migrator
+
+      - name: migrate:init through the image
+        run: |
+          docker run --rm -u "$(id -u)" \
+            -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
+            -v "$PWD:/app" migrator-runtime:ci migrate:init
+
+      - name: migrate:up through the image
+        run: |
+          docker run --rm -u "$(id -u)" \
+            -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
+            -v "$PWD:/app" migrator-runtime:ci migrate:up
+
+      - name: Bad config contract fails with exit 1
+        run: |
+          set +e
+          docker run --rm -u "$(id -u)" \
+            -e MIGRATOR_CONFIG=/app/composer.json \
+            -v "$PWD:/app" migrator-runtime:ci migrate:up
+          code=$?
+          set -e
+          test "$code" -eq 1
