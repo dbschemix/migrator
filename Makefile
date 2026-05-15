@@ -77,6 +77,14 @@ example:
 		docker compose run --rm -u $(USER) -w /example app sh -l
 	make stop
 
+docker-runtime: ## Build runtime image and run the sqlite example through it
+	docker build -t migrator-runtime:dev .docker/migrator
+	docker run --rm -u $(USER) -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
+		-v "$$(pwd):/app" migrator-runtime:dev migrate:init
+	docker run --rm -u $(USER) -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
+		-v "$$(pwd):/app" migrator-runtime:dev migrate:up
+	git clean -fd example/data
+
 stop: ## Stop server
 	docker compose -f ./docker-compose.yml stop
 
