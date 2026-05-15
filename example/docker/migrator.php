@@ -31,6 +31,5 @@ $migrator = new Migrator(
     ],
 );
 
-return $migrator;
-
 /** @var MigratorInterface $migrator phpstan: documents the contract */
+return $migrator;

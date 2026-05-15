@@ -6,7 +6,7 @@ FROM ghcr.io/kuaukutsu/php:${PHP_VERSION}-cli
 RUN install-php-extensions pdo_mysql pdo_pgsql pdo_sqlite
 
 # Entrypoint shim (the library itself comes from the user's mounted vendor/)
-COPY migrator /usr/local/bin/migrator
+COPY migrator.php /usr/local/bin/migrator
 RUN chmod +x /usr/local/bin/migrator
 
 # Unprivileged user; override with `-u $(id -u)` to match host file ownership

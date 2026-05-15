@@ -65,17 +65,7 @@ fix: phpcbf rector ## run fix tools
 
 check: phpcs psalm phpstan ## run analysis tools
 
-## Application
-
-cli:
-	$(DOCKER_RUN) -w /app/example \
- 		ghcr.io/kuaukutsu/php:${PHP_VERSION}-cli \
- 		sh -l
-
-example:
-	VERSION=$(VERSION) USER=$(USER) \
-		docker compose run --rm -u $(USER) -w /example app sh -l
-	make stop
+## Smoke test
 
 docker-runtime: ## Build runtime image and run the sqlite example through it
 	docker build -t migrator-runtime:dev .docker/migrator
@@ -83,13 +73,16 @@ docker-runtime: ## Build runtime image and run the sqlite example through it
 		-v "$$(pwd):/app" migrator-runtime:dev migrate:init
 	docker run --rm -u $(USER) -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
 		-v "$$(pwd):/app" migrator-runtime:dev migrate:up
+	docker run --rm -u $(USER) -e MIGRATOR_CONFIG=/app/example/docker/migrator.php \
+		-v "$$(pwd):/app" migrator-runtime:dev migrate:down
 	git clean -fd example/data
 
-stop: ## Stop server
-	docker compose -f ./docker-compose.yml stop
+## Application
 
-down: stop
-	docker compose -f ./docker-compose.yml down --remove-orphans
+cli:
+	$(DOCKER_RUN) -w /app/example \
+ 		ghcr.io/kuaukutsu/php:${PHP_VERSION}-cli \
+ 		sh -l
 
 remove: down _image_remove _container_remove _volume_remove
 
