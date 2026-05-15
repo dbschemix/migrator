@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace dbschemix\migrator\tests\cmd\presentation;
 
 use InvalidArgumentException;
-use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use dbschemix\core\InputOptions;
 use dbschemix\migrator\cmd\presentation\CommandOptions;
 
-#[CoversClass(CommandOptions::class)]
+#[CoversTrait(CommandOptions::class)]
 final class CommandOptionsTest extends TestCase
 {
     // -----------------------------------------------------------------------
