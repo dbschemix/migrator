@@ -143,3 +143,10 @@ _volume_remove:
 	docker volume rm -f \
 		migrator_pg_data \
 		migrator_mysql_data
+
+## AI
+-include .claude/Makefile
+
+# Спец-правило, чтобы Makefile не ругался на неизвестные команды (аргументы)
+%:
+	@:

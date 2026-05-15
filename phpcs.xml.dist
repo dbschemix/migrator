@@ -43,4 +43,13 @@
     <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
     <!-- https://github.com/slevomat/coding-standard/blob/master/doc/whitespaces.md -->
     <rule ref="SlevomatCodingStandard.Whitespaces.DuplicateSpaces"/>
+
+    <!-- Test methods use snake_case names (PHPUnit #[Test] attribute convention) -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>tests/</exclude-pattern>
+    </rule>
+    <!-- Test files use aligned arrays for readability in data providers -->
+    <rule ref="SlevomatCodingStandard.Whitespaces.DuplicateSpaces">
+        <exclude-pattern>tests/</exclude-pattern>
+    </rule>
 </ruleset>

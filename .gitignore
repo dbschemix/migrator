@@ -1,6 +1,7 @@
 # phpstorm project files
 .idea
 .zed
+.claude
 
 # Mac DS_Store Files
 .DS_Store
@@ -18,4 +19,5 @@ phpunit.phar
 
 # local
 *.local.php
+*.env
 .auth.json
