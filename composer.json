@@ -48,16 +48,6 @@
     },
     "sort-packages": true
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/dbschemix/core"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/dbschemix/pdo"
-    }
-  ],
   "scripts": {
     "fix": [
       "@phpcbf",
