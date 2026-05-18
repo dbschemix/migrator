@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace dbschemix\migrator\cmd\presentation;
 
 use Override;
-use Throwable;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -51,10 +50,11 @@ final class CreateCommand extends Command
         } catch (InvalidArgumentException | MigratorException $e) {
             $output->writeln($e->getMessage());
             return Command::INVALID;
-        } catch (Throwable) {
-            return Command::FAILURE;
         }
 
+        // Unexpected throwables are not swallowed: they propagate to
+        // Application::run(), which renders the exception type and message
+        // (with a full stack trace under -v) and returns a non-zero exit code.
         return Command::SUCCESS;
     }
 }

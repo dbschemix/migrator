@@ -52,7 +52,7 @@ final class InitCommandTest extends TestCase
     }
 
     #[Test]
-    public function generic_throwable_returns_failure(): void
+    public function unexpected_throwable_is_not_swallowed_and_propagates(): void
     {
         // Given
         $migrator = new FakeMigrator();
@@ -60,10 +60,13 @@ final class InitCommandTest extends TestCase
         $command = new InitCommand($migrator);
         $tester = new CommandTester($command);
 
-        // When
-        $exitCode = $tester->execute([]);
+        // Then — the unexpected error must stay visible (type + message),
+        // not be turned into a silent Command::FAILURE. It propagates so
+        // Symfony's Application renderer reports it on stderr.
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('unexpected');
 
-        // Then
-        self::assertSame(Command::FAILURE, $exitCode);
+        // When
+        $tester->execute([]);
     }
 }

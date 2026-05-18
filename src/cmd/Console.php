@@ -6,9 +6,7 @@ namespace dbschemix\migrator\cmd;
 
 use Exception;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use dbschemix\migrator\cmd\presentation\CreateCommand;
 use dbschemix\migrator\cmd\presentation\DownCommand;
 use dbschemix\migrator\cmd\presentation\FixtureCommand;
@@ -20,6 +18,9 @@ use dbschemix\core\MigratorInterface;
 
 final readonly class Console
 {
+    /**
+     * @throws Exception if Symfony Console fails to run the application
+     */
     public static function run(MigratorInterface $migrator): never
     {
         $console = new Application();
@@ -37,13 +38,10 @@ final readonly class Console
             )
         );
 
-        $output = new ConsoleOutput();
-
-        try {
-            exit($console->run());
-        } catch (Exception $e) {
-            $output->writeln($e->getMessage());
-            exit(Command::FAILURE);
-        }
+        // Application::run() catches uncaught throwables, renders them
+        // (exception class + message, full stack trace under -v) to stderr,
+        // and returns a non-zero exit code. We must not wrap it in our own
+        // catch: doing so swallows the type and trace Symfony would render.
+        exit($console->run());
     }
 }
