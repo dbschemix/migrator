@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Tester\CommandTester;
 use dbschemix\core\InputOptions;
-use dbschemix\migrator\cmd\presentation\CommandOptions;
+use dbschemix\migrator\cmd\presentation\support\CommandOptions;
 
 #[CoversTrait(CommandOptions::class)]
 final class CommandOptionsTest extends TestCase

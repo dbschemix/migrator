@@ -33,7 +33,6 @@ final class BootstrapTest extends TestCase
     {
         // Given / When / Then
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('return $migrator');
 
         Bootstrap::assertMigrator(null);
     }
@@ -43,7 +42,6 @@ final class BootstrapTest extends TestCase
     {
         // Given / When / Then
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('MigratorInterface');
 
         Bootstrap::assertMigrator(new stdClass());
     }

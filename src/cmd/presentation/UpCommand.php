@@ -12,9 +12,10 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use dbschemix\core\exception\InitializationException;
 use dbschemix\core\exception\MigratorException;
 use dbschemix\core\MigratorInterface;
+use dbschemix\migrator\cmd\presentation\support\CommandOptions;
+use dbschemix\migrator\cmd\presentation\support\MigratorExceptionReporter;
 
 #[AsCommand(
     name: 'migrate:up',
@@ -23,6 +24,7 @@ use dbschemix\core\MigratorInterface;
 final class UpCommand extends Command
 {
     use CommandOptions;
+    use MigratorExceptionReporter;
 
     /**
      * @throws LogicException
@@ -73,11 +75,7 @@ final class UpCommand extends Command
         try {
             $this->migrator->up($this->getOptions($input));
         } catch (InvalidArgumentException | MigratorException $e) {
-            if ($e instanceof InitializationException) {
-                $output->writeln('Calling the command "migrate:init" may help fix the error.');
-            }
-            $output->writeln($e->getMessage());
-            return Command::INVALID;
+            return $this->reportRecoverableFailure($e, $output);
         }
 
         // Unexpected throwables are not swallowed: they propagate to

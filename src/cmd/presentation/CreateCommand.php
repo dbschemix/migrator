@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use dbschemix\core\exception\MigratorException;
 use dbschemix\core\MigratorInterface;
+use dbschemix\migrator\cmd\presentation\support\CommandOptions;
 
 #[AsCommand(
     name: 'migrate:create',
