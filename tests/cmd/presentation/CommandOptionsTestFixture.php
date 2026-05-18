@@ -9,7 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use dbschemix\core\InputOptions;
-use dbschemix\migrator\cmd\presentation\CommandOptions;
+use dbschemix\migrator\cmd\presentation\support\CommandOptions;
 
 /**
  * Concrete fixture command that uses the CommandOptions trait and exposes

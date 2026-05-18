@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace dbschemix\migrator\cmd\presentation;
+namespace dbschemix\migrator\cmd\presentation\support;
 
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,8 +48,17 @@ trait CommandOptions
     }
 
     /**
+     * Normalizes the raw CLI option into the type required by the core
+     * contract. The "limit" business rule itself is owned by
+     * {@see InputOptions}, which declares the parameter as a
+     * non-negative-int; this method only guarantees the transport value
+     * can satisfy that contract before it reaches the core, so a malformed
+     * option is rejected at the edge instead of producing an out-of-contract
+     * value downstream.
+     *
      * @return non-negative-int
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException if the option cannot be represented
+     *                                  as the core contract's non-negative-int
      */
     private function getOptionLimit(InputInterface $input): int
     {

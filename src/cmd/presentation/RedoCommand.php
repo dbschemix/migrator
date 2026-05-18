@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace dbschemix\migrator\cmd\presentation;
 
 use Override;
-use Throwable;
 use InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -13,9 +12,10 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use dbschemix\core\exception\InitializationException;
 use dbschemix\core\exception\MigratorException;
 use dbschemix\core\MigratorInterface;
+use dbschemix\migrator\cmd\presentation\support\CommandOptions;
+use dbschemix\migrator\cmd\presentation\support\MigratorExceptionReporter;
 
 #[AsCommand(
     name: 'migrate:redo',
@@ -24,6 +24,7 @@ use dbschemix\core\MigratorInterface;
 final class RedoCommand extends Command
 {
     use CommandOptions;
+    use MigratorExceptionReporter;
 
     /**
      * @throws LogicException
@@ -66,15 +67,12 @@ final class RedoCommand extends Command
         try {
             $this->migrator->redo($this->getOptions($input));
         } catch (InvalidArgumentException | MigratorException $e) {
-            if ($e instanceof InitializationException) {
-                $output->writeln('Calling the command "migrate:init" may help fix the error.');
-            }
-            $output->writeln($e->getMessage());
-            return Command::INVALID;
-        } catch (Throwable) {
-            return Command::FAILURE;
+            return $this->reportRecoverableFailure($e, $output);
         }
 
+        // Unexpected throwables are not swallowed: they propagate to
+        // Application::run(), which renders the exception type and message
+        // (with a full stack trace under -v) and returns a non-zero exit code.
         return Command::SUCCESS;
     }
 }
