@@ -10,6 +10,7 @@ use dbschemix\core\event\Event;
 use dbschemix\core\event\EventInterface;
 use dbschemix\core\event\EventSubscriberInterface;
 use dbschemix\core\event\MigrateSuccessEvent;
+use dbschemix\core\event\Subscription;
 
 /**
  * @api
@@ -25,24 +26,21 @@ final readonly class TraceConsoleOutput implements EventSubscriberInterface
     {
         $subscriptions = [];
         foreach (Event::cases() as $event) {
-            $subscriptions[$event->value] = match ($event) {
-                Event::MigrateSuccess => $this->success(...),
-                default => $this->error(...),
+            $subscriptions[] = match ($event) {
+                Event::MigrateSuccess => new Subscription($event, $this->success(...)),
+                default => new Subscription($event, $this->error(...)),
             };
         }
 
-        /**
-         * @var non-empty-array<string, callable(Event $name, EventInterface $event):void> $subscriptions
-         * @phpstan-ignore varTag.nativeType
-         */
         return $subscriptions;
     }
 
     /**
      * @noinspection PhpUnusedParameterInspection
      */
-    public function success(Event $name, MigrateSuccessEvent $event): void
+    public function success(Event $name, EventInterface $event): void
     {
+        assert($event instanceof MigrateSuccessEvent);
         $this->stdout($event->getMessage());
     }
 

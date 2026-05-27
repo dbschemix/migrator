@@ -16,8 +16,8 @@
   "require": {
     "php": "^8.3",
     "symfony/console": "^7.4",
-    "dbschemix/core": "^1.0",
-    "dbschemix/pdo": "^1.0",
+    "dbschemix/core": "^1.1",
+    "dbschemix/pdo": "^1.1",
     "league/climate": "^3.10"
   },
   "require-dev": {
