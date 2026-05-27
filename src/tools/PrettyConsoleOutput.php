@@ -11,6 +11,7 @@ use dbschemix\core\event\EventInterface;
 use dbschemix\core\event\EventSubscriberInterface;
 use dbschemix\core\event\MigrateErrorEvent;
 use dbschemix\core\event\MigrateSuccessEvent;
+use dbschemix\core\event\Subscription;
 
 /**
  * @api
@@ -28,26 +29,24 @@ final readonly class PrettyConsoleOutput implements EventSubscriberInterface
     {
         $subscriptions = [];
         foreach (Event::cases() as $event) {
-            $subscriptions[$event->value] = match ($event) {
-                Event::MigrateSuccess => $this->success(...),
-                Event::MigrateError => $this->error(...),
-                Event::FilesystemNotice => $this->notice(...),
-                default => $this->failure(...),
+            $subscriptions[] = match ($event) {
+                Event::MigrateSuccess => new Subscription($event, $this->success(...)),
+                Event::MigrateError => new Subscription($event, $this->error(...)),
+                Event::FilesystemNotice => new Subscription($event, $this->notice(...)),
+                default => new Subscription($event, $this->failure(...)),
             };
         }
 
-        /**
-         * @var non-empty-array<string, callable(Event $name, EventInterface $event):void> $subscriptions
-         * @phpstan-ignore varTag.nativeType
-         */
         return $subscriptions;
     }
 
     /**
      * @noinspection PhpUnusedParameterInspection
      */
-    public function success(Event $name, MigrateSuccessEvent $event): void
+    public function success(Event $name, EventInterface $event): void
     {
+        assert($event instanceof MigrateSuccessEvent);
+
         $this->output->out(
             match ($event->action) {
                 "up",
@@ -74,8 +73,10 @@ final readonly class PrettyConsoleOutput implements EventSubscriberInterface
     /**
      * @noinspection PhpUnusedParameterInspection
      */
-    public function error(Event $name, MigrateErrorEvent $event): void
+    public function error(Event $name, EventInterface $event): void
     {
+        assert($event instanceof MigrateErrorEvent);
+
         $this->output->out(
             sprintf(
                 '[<bold>%s</bold>] %s: %s <red>error</red>',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace dbschemix\migrator\tests\tools;
 
+use Closure;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -11,6 +12,7 @@ use dbschemix\core\Context;
 use dbschemix\core\event\Event;
 use dbschemix\core\event\MigrateSuccessEvent;
 use dbschemix\core\event\MigrateErrorEvent;
+use dbschemix\core\event\Subscription;
 use dbschemix\migrator\tests\Fakes\FakeConsoleOutput;
 use dbschemix\migrator\tools\TraceConsoleOutput;
 use RuntimeException;
@@ -18,6 +20,21 @@ use RuntimeException;
 #[CoversClass(TraceConsoleOutput::class)]
 final class TraceConsoleOutputTest extends TestCase
 {
+    /**
+     * @param list<Subscription> $subscriptions
+     * @return Closure(Event, \dbschemix\core\event\EventInterface): void
+     */
+    private static function callbackFor(array $subscriptions, Event $event): Closure
+    {
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->event === $event) {
+                return $subscription->callback;
+            }
+        }
+
+        self::fail("No subscription registered for event {$event->value}");
+    }
+
     // -----------------------------------------------------------------------
     // subscriptions()
     // -----------------------------------------------------------------------
@@ -33,13 +50,13 @@ final class TraceConsoleOutputTest extends TestCase
         $subscriptions = $trace->subscriptions();
 
         // Then — every Event case must have a subscription
-        $expectedKeys = array_map(static fn(Event $e): string => $e->value, Event::cases());
-        sort($expectedKeys);
+        $expected = Event::cases();
+        sort($expected);
 
-        $actualKeys = array_keys($subscriptions);
-        sort($actualKeys);
+        $actual = array_map(static fn(Subscription $s): Event => $s->event, $subscriptions);
+        sort($actual);
 
-        self::assertSame($expectedKeys, $actualKeys);
+        self::assertSame($expected, $actual);
     }
 
     #[Test]
@@ -56,7 +73,7 @@ final class TraceConsoleOutputTest extends TestCase
         $context = new Context(dbName: 'testdb', filename: 'V1__init.sql', query: 'SELECT 1');
         $event = new MigrateSuccessEvent(action: 'up', context: $context);
 
-        ($subscriptions[Event::MigrateSuccess->value])(Event::MigrateSuccess, $event);
+        (self::callbackFor($subscriptions, Event::MigrateSuccess))(Event::MigrateSuccess, $event);
 
         self::assertCount(1, $output->lines);
         // success() writes event->getMessage() which is "[testdb] up: V1__init.sql, vers: 0"
@@ -84,7 +101,7 @@ final class TraceConsoleOutputTest extends TestCase
             $output = new FakeConsoleOutput();
             $subscriptions = (new TraceConsoleOutput($output))->subscriptions();
 
-            ($subscriptions[$case->value])($case, $error);
+            (self::callbackFor($subscriptions, $case))($case, $error);
             self::assertCount(1, $output->lines, "Expected one writeln for event {$case->value}");
             self::assertStringContainsString($error->getName(), $output->lines[0]);
             self::assertStringContainsString($error->getMessage(), $output->lines[0]);

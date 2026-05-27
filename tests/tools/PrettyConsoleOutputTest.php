@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace dbschemix\migrator\tests\tools;
 
+use Closure;
 use League\CLImate\CLImate;
 use League\CLImate\Util\Writer\Buffer;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -15,6 +16,7 @@ use dbschemix\core\event\Event;
 use dbschemix\core\event\MigrateErrorEvent;
 use dbschemix\core\event\MigrateSuccessEvent;
 use dbschemix\core\event\ExceptionEvent;
+use dbschemix\core\event\Subscription;
 use dbschemix\migrator\tools\PrettyConsoleOutput;
 use RuntimeException;
 
@@ -42,6 +44,21 @@ final class PrettyConsoleOutputTest extends TestCase
         return [$climate, $buffer->get(...)];
     }
 
+    /**
+     * @param list<Subscription> $subscriptions
+     * @return Closure(Event, \dbschemix\core\event\EventInterface): void
+     */
+    private static function callbackFor(array $subscriptions, Event $event): Closure
+    {
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->event === $event) {
+                return $subscription->callback;
+            }
+        }
+
+        self::fail("No subscription registered for event {$event->value}");
+    }
+
     // -----------------------------------------------------------------------
     // subscriptions()
     // -----------------------------------------------------------------------
@@ -56,13 +73,13 @@ final class PrettyConsoleOutputTest extends TestCase
         $subscriptions = $pretty->subscriptions();
 
         // Then
-        $expectedKeys = array_map(static fn(Event $e): string => $e->value, Event::cases());
-        sort($expectedKeys);
+        $expected = Event::cases();
+        sort($expected);
 
-        $actualKeys = array_keys($subscriptions);
-        sort($actualKeys);
+        $actual = array_map(static fn(Subscription $s): Event => $s->event, $subscriptions);
+        sort($actual);
 
-        self::assertSame($expectedKeys, $actualKeys);
+        self::assertSame($expected, $actual);
     }
 
     #[Test]
@@ -76,7 +93,7 @@ final class PrettyConsoleOutputTest extends TestCase
 
         // When
         $subscriptions = $pretty->subscriptions();
-        ($subscriptions[Event::MigrateSuccess->value])(Event::MigrateSuccess, $event);
+        (self::callbackFor($subscriptions, Event::MigrateSuccess))(Event::MigrateSuccess, $event);
 
         // Then
         self::assertStringContainsString('db', $readBuffer());
@@ -97,7 +114,7 @@ final class PrettyConsoleOutputTest extends TestCase
 
         // When
         $subscriptions = $pretty->subscriptions();
-        ($subscriptions[Event::MigrateError->value])(Event::MigrateError, $event);
+        (self::callbackFor($subscriptions, Event::MigrateError))(Event::MigrateError, $event);
 
         // Then
         self::assertStringContainsString('error', $readBuffer());
@@ -113,7 +130,7 @@ final class PrettyConsoleOutputTest extends TestCase
 
         // When
         $subscriptions = $pretty->subscriptions();
-        ($subscriptions[Event::FilesystemNotice->value])(Event::FilesystemNotice, $event);
+        (self::callbackFor($subscriptions, Event::FilesystemNotice))(Event::FilesystemNotice, $event);
 
         // Then
         self::assertStringContainsString('notice', $readBuffer());
@@ -144,7 +161,7 @@ final class PrettyConsoleOutputTest extends TestCase
             $subscriptions2 = $pretty2->subscriptions();
 
             // When
-            ($subscriptions2[$case->value])($case, $event);
+            (self::callbackFor($subscriptions2, $case))($case, $event);
 
             // Then — failure() format contains "error:"
             $msg = "Event {$case->value} should use failure handler";
